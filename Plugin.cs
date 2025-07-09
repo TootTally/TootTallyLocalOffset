@@ -6,8 +6,9 @@ using System.IO;
 using TootTallyCore.Utils.TootTallyModules;
 using TootTallySettings;
 using UnityEngine;
+using UnityEngine.UIElements.UIR;
 
-namespace TootTally.ModuleTemplate
+namespace TootTallyLocalOffset
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     [BepInDependency("TootTallyCore", BepInDependency.DependencyFlags.HardDependency)]
@@ -16,7 +17,6 @@ namespace TootTally.ModuleTemplate
     {
         public static Plugin Instance;
 
-        private const string CONFIG_NAME = "ModuleTemplate.cfg";
         private Harmony _harmony;
         public ConfigEntry<bool> ModuleConfigEnabled { get; set; }
         public bool IsConfigInitialized { get; set; }
@@ -40,8 +40,7 @@ namespace TootTally.ModuleTemplate
 
         private void TryInitialize()
         {
-            // Bind to the TTModules Config for TootTally
-            ModuleConfigEnabled = TootTallyCore.Plugin.Instance.Config.Bind("Modules", "<insert module name here>", true, "<insert module description here>");
+            ModuleConfigEnabled = TootTallyCore.Plugin.Instance.Config.Bind("Modules", "LocalOffets", true, "Allows offset per charts.");
             TootTallyModuleManager.AddModule(this);
             TootTallySettings.Plugin.Instance.AddModuleToSettingPage(this);
         }
@@ -49,19 +48,22 @@ namespace TootTally.ModuleTemplate
         public void LoadModule()
         {
             string configPath = Path.Combine(Paths.BepInExRootPath, "config/");
-            ConfigFile config = new ConfigFile(configPath + CONFIG_NAME, true) { SaveOnConfigSet = true };
-            // Set your config here by binding them to the related ConfigEntry
-            // Example:
-            // Unlimited = config.Bind(CONFIG_FIELD, "Unlimited", DEFAULT_UNLISETTING)
+            OffsetIncreaseKeybind = Config.Bind("General", "OffsetIncreaseKeybind", KeyCode.RightBracket, "Increase the local offset of the current chart");
+            OffsetDecreaseKeybind = Config.Bind("General", "OffsetDecreaseKeybind", KeyCode.LeftBracket, "Decrease the local offset of the current chart");
+            OffsetIncrements = Config.Bind("General", "OffsetIncrements", 1f, "Offset Increments per key presses.");
 
-            settingPage = TootTallySettingsManager.AddNewPage("ModulePageName", "HeaderText", 40f, new Color(0,0,0,0));
+            settingPage = TootTallySettingsManager.AddNewPage("Local Offset", "Local Offset", 40f, new Color(0,0,0,0));
             if (settingPage != null) {
-                // Use TootTallySettingPage functions to add your objects to TootTallySetting
-                // Example:
-                // page.AddToggle(name, option.Unlimited);
+                settingPage.AddLabel("Increase Offset Keybind");
+                settingPage.AddDropdown("Increase Offset Keybind", OffsetIncreaseKeybind);
+                settingPage.AddLabel("Decrease Offset Keybind");
+                settingPage.AddDropdown("Decrease Offset Keybind", OffsetDecreaseKeybind);
+                settingPage.AddSlider("Increments (ms)", 1, 50, OffsetIncrements, true);
             }
 
-            _harmony.PatchAll(typeof(ModuleTemplatePatches));
+            TootTallySettings.Plugin.TryAddThunderstoreIconToPageButton(Instance.Info.Location, Name, settingPage);
+            
+            _harmony.PatchAll(typeof(LocalOffsetPatches));
             LogInfo($"Module loaded!");
         }
 
@@ -72,13 +74,8 @@ namespace TootTally.ModuleTemplate
             LogInfo($"Module unloaded!");
         }
 
-        public static class ModuleTemplatePatches
-        {
-            // Apply your Trombone Champ patches here
-        }
-
-        // Add your ConfigEntry objects that define your configs
-        // Example:
-        // public ConfigEntry<bool> Unlimited { get; set; }
+        public ConfigEntry<KeyCode> OffsetIncreaseKeybind { get; set; }
+        public ConfigEntry<KeyCode> OffsetDecreaseKeybind { get; set; }
+        public ConfigEntry<float> OffsetIncrements { get; set; }
     }
 }

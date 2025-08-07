@@ -17,6 +17,8 @@ namespace TootTallyLocalOffset
     {
         public static Plugin Instance;
 
+        public const string FILE_OFFSET_NAME = "TootTallyLocalOffsets.json";
+
         private Harmony _harmony;
         public ConfigEntry<bool> ModuleConfigEnabled { get; set; }
         public bool IsConfigInitialized { get; set; }
@@ -62,7 +64,9 @@ namespace TootTallyLocalOffset
             }
 
             TootTallySettings.Plugin.TryAddThunderstoreIconToPageButton(Instance.Info.Location, Name, settingPage);
-            
+
+            LocalOffsetPatches.LoadOffsetsFromFile();
+
             _harmony.PatchAll(typeof(LocalOffsetPatches));
             LogInfo($"Module loaded!");
         }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TootTallyCore.Utils.Helpers;
 using TootTallyCore.Utils.TootTallyNotifs;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ namespace TootTallyLocalOffset
         private static Dictionary<string, int> _trackRefToOffsetDict = new Dictionary<string, int>();
 
         [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         public static void OnGameControllerStart(GameController __instance)
         {
             var key = GlobalVariables.chosen_track;
@@ -50,13 +51,25 @@ namespace TootTallyLocalOffset
         {
             if (!_trackRefToOffsetDict.ContainsKey(key))
                 _trackRefToOffsetDict.Add(key, 0);
-            _trackRefToOffsetDict[key] = (int)Mathf.Clamp(value, -300f, 300f);
+            _trackRefToOffsetDict[key] += (int)value;
 
 
             __instance.latency_offset += value * 0.001f;
             TootTallyNotifManager.DisplayNotif($"New Local Offset: {_trackRefToOffsetDict[key]}ms");
-            FileHelper.SaveOffetFile(_trackRefToOffsetDict);
+            FileHelper.SaveToTootTallyAppData(Plugin.FILE_OFFSET_NAME, _trackRefToOffsetDict);
+            //FileHelperOffset.SaveOffetFile(_trackRefToOffsetDict);
             //_saveToFileTimer = .5f;
+        }
+
+        public static void LoadOffsetsFromFile()
+        {
+            _trackRefToOffsetDict = FileHelper.LoadFromTootTallyAppData<Dictionary<string, int>>(Plugin.FILE_OFFSET_NAME);
+            if (_trackRefToOffsetDict == default)
+            {
+                Plugin.LogInfo($"Couldn't find offset file, creating new one!");
+                _trackRefToOffsetDict = new Dictionary<string, int>();
+                FileHelper.SaveToTootTallyAppData(Plugin.FILE_OFFSET_NAME, _trackRefToOffsetDict, true);
+            }
         }
 
     }

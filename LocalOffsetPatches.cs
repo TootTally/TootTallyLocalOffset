@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TootTallyCore.Utils.Helpers;
+using TootTallyCore.Utils.TootTallyGlobals;
 using TootTallyCore.Utils.TootTallyNotifs;
 using UnityEngine;
 
@@ -23,7 +24,7 @@ namespace TootTallyLocalOffset
             if (_trackRefToOffsetDict.TryGetValue(key, out int offset) && offset != 0)
             {
                 Plugin.LogInfo($"Latency adjusted by local offset by {offset}.");
-                __instance.latency_offset += offset * 0.001f;
+                __instance.latency_offset += offset * 0.001f * TootTallyGlobalVariables.gameSpeedMultiplier;
             }
         }
 
@@ -54,7 +55,7 @@ namespace TootTallyLocalOffset
             _trackRefToOffsetDict[key] += (int)value;
 
 
-            __instance.latency_offset += value * 0.001f;
+            __instance.latency_offset += value * 0.001f * TootTallyGlobalVariables.gameSpeedMultiplier;
             TootTallyNotifManager.DisplayNotif($"New Local Offset: {_trackRefToOffsetDict[key]}ms");
             FileHelper.SaveToTootTallyAppData(Plugin.FILE_OFFSET_NAME, _trackRefToOffsetDict);
             //FileHelperOffset.SaveOffetFile(_trackRefToOffsetDict);

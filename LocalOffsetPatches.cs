@@ -73,5 +73,13 @@ namespace TootTallyLocalOffset
             }
         }
 
+        public static void ResetAllOffets()
+        {
+            _trackRefToOffsetDict = new Dictionary<string, int>();
+            FileHelper.SaveToTootTallyAppData(Plugin.FILE_OFFSET_NAME, _trackRefToOffsetDict, true);
+            TootTallyNotifManager.DisplayNotif("All local offsets have been reset.");
+            Plugin.LogInfo("All local offsets have been reset.");
+        }
+
     }
 }

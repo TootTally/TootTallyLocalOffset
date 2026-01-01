@@ -61,6 +61,7 @@ namespace TootTallyLocalOffset
                 settingPage.AddLabel("Decrease Offset Keybind");
                 settingPage.AddDropdown("Decrease Offset Keybind", OffsetDecreaseKeybind);
                 settingPage.AddSlider("Increments (ms)", 1, 50, OffsetIncrements, true);
+                settingPage.AddButton("Reset all offsets", LocalOffsetPatches.ResetAllOffets);
             }
 
             TootTallySettings.Plugin.TryAddThunderstoreIconToPageButton(Instance.Info.Location, Name, settingPage);
